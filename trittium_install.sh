@@ -1,3 +1,20 @@
+Skip to content
+ 
+Search or jump to…
+
+Pull requests
+Issues
+Marketplace
+Explore
+ @quaestorsolutions Sign out
+1
+0 0 zoldur/Trittium
+ Code  Issues 0  Pull requests 0  Projects 0  Wiki  Insights
+Trittium/trittium_install.sh
+acf43e1  on Jul 20
+@zoldur zoldur Update trittium_install.sh
+     
+272 lines (233 sloc)  7.88 KB
 #!/bin/bash
 
 TMP_FOLDER=$(mktemp -d)
@@ -37,24 +54,19 @@ function configure_systemd() {
 [Unit]
 Description=$COIN_NAME service
 After=network.target
-
 [Service]
 User=root
 Group=root
-
 Type=forking
 #PIDFile=$CONFIGFOLDER/$COIN_NAME.pid
-
 ExecStart=$COIN_PATH$COIN_DAEMON -daemon -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER
 ExecStop=-$COIN_PATH$COIN_CLI -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER stop
-
 Restart=always
 PrivateTmp=true
 TimeoutStopSec=60s
 TimeoutStartSec=10s
 StartLimitInterval=120s
 StartLimitBurst=5
-
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -90,7 +102,8 @@ EOF
 }
 
 function create_key() {
-
+  echo -e "Enter your ${RED}$COIN_NAME Masternode Private Key${NC}. Leave it blank to generate a new ${RED}Masternode Private Key${NC} for you:"
+  read -e COINKEY
   if [[ -z "$COINKEY" ]]; then
   $COIN_PATH$COIN_DAEMON -daemon
   sleep 30
@@ -119,21 +132,28 @@ maxconnections=256
 masternode=1
 externalip=$NODEIP:$COIN_PORT
 masternodeprivkey=$COINKEY
-addnode=104.244.76.14
-addnode=95.216.162.186
-addnode=149.28.94.252
-addnode=185.58.193.146
-addnode=54.39.22.163
-addnode=45.77.51.103
-addnode=167.99.223.127
-addnode=95.179.163.0
-addnode=207.148.0.212
-addnode=198.13.56.255
-addnode=206.189.6.135
-addnode=94.177.247.157
-addnode=95.216.56.184
-addnode=206.81.12.96
-addnode=212.237.63.237
+#addnode=83.137.50.148 
+#addnode=37.24.156.16 
+#addnode=148.251.203.197 
+#addnode=172.58.43.245 
+#addnode=88.130.61.158 
+#addnode=188.233.30.99 
+#addnode=185.54.7.63 
+#addnode=104.156.254.81 
+#addnode=109.185.137.109 
+#addnode=172.110.66.196 
+#addnode=83.169.216.238 
+#addnode=78.139.69.111 
+#addnode=185.96.252.252 
+#addnode=193.93.13.28 
+#addnode=91.97.55.246 
+#addnode=83.137.50.148 
+#addnode=148.251.203.197 
+#addnode=138.68.30.187 
+#addnode=45.77.66.148 
+#addnode=173.212.226.156 
+#addnode=144.217.126.80 
+#addnode=172.245.241.119
 EOF
 }
 
@@ -261,3 +281,16 @@ checks
 prepare_system
 download_node
 setup_node
+© 2018 GitHub, Inc.
+Terms
+Privacy
+Security
+Status
+Help
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
+Press h to open a hovercard with more details.
