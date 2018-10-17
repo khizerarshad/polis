@@ -283,4 +283,4 @@ clear
 checks
 prepare_system
 compile_node
-setup_nodeze
+setup_node
