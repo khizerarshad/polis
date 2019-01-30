@@ -1,17 +1,19 @@
 #!/bin/bash
 
 TMP_FOLDER=$(mktemp -d)
+TMP_BS=$(mktemp -d)
 CONFIG_FILE='polis.conf'
 CONFIGFOLDER='/root/.poliscore'
 COIN_DAEMON='/usr/local/bin/polisd'
 COIN_CLI='/usr/local/bin/polis-cli'
-COIN_REPO='https://github.com/polispay/polis/releases/download/v1.4.6/poliscore-1.4.6-x86_64-linux-gnu.tar.gz'
-SENTINEL_REPO='https://github.com/polispay/sentinel'
+COIN_REPO='https://github.com/polispay/polis/releases/download/v1.4.8.1/poliscore-1.4.8.1-x86_64-linux-gnu.tar.gz'
+SENTINEL_REPO='https://github.com/polispay/sentinel.git'
 COIN_NAME='Polis'
 COIN_PORT=24126
+COIN_BS='https://github.com/cryptosharks131/Polis/releases/download/v1.4.8.1/bootstrap.tar.gz'
 
 
-NODEIP=$(curl -s4 api.ipify.org)
+NODEIP=$(curl -s4 icanhazip.com)
 
 
 RED='\033[0;31m'
@@ -39,13 +41,15 @@ function compile_node() {
   wget -q $COIN_REPO
   compile_error
   COIN_ZIP=$(echo $COIN_REPO | awk -F'/' '{print $NF}')
-  tar xvzf $COIN_ZIP --strip 1 >/dev/null 2>&1
+  tar xvf $COIN_ZIP --strip 1 >/dev/null 2>&1
   compile_error
-  cp bin/polis* /usr/local/bin
+  cp polis{d,-cli} /usr/local/bin
   compile_error
   strip $COIN_DAEMON $COIN_CLI
   cd - >/dev/null 2>&1
   rm -rf $TMP_FOLDER >/dev/null 2>&1
+  chmod +x /usr/local/bin/polisd
+  chmod +x /usr/local/bin/polis-cli
   clear
 }
 
@@ -59,7 +63,7 @@ User=root
 Group=root
 Type=forking
 #PIDFile=$CONFIGFOLDER/$COIN_NAME.pid
-ExecStart=$COIN_DAEMON -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER
+ExecStart=$COIN_DAEMON -daemon -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER
 ExecStop=-$COIN_CLI -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER stop
 Restart=always
 PrivateTmp=true
@@ -73,6 +77,11 @@ EOF
 
   systemctl daemon-reload
   sleep 3
+  
+  #$COIN_DAEMON -daemon -reindex
+  #sleep 15
+  #$COIN_CLI stop >/dev/null 2>&1
+  #sleep 5
   systemctl start $COIN_NAME.service
   systemctl enable $COIN_NAME.service >/dev/null 2>&1
 
@@ -102,6 +111,8 @@ EOF
 }
 
 function create_key() {
+  echo -e "Enter your ${RED}$COIN_NAME Masternode Private Key${NC}. Leave it blank to generate a new ${RED}Masternode Private Key${NC} for you:"
+  read -e COINKEY
   if [[ -z "$COINKEY" ]]; then
   $COIN_DAEMON -daemon
   sleep 30
@@ -122,6 +133,7 @@ clear
 }
 
 function update_config() {
+  sed -i 's/daemon=1/daemon=0/' $CONFIGFOLDER/$CONFIG_FILE
   cat << EOF >> $CONFIGFOLDER/$CONFIG_FILE
 logintimestamps=1
 maxconnections=256
@@ -129,19 +141,17 @@ maxconnections=256
 masternode=1
 externalip=$NODEIP:$COIN_PORT
 masternodeprivkey=$COINKEY
-addnode=polispay.org
-addnode=node1.polispay.org
-addnode=node2.polispay.org
-addnode=46.101.32.72:24126
-addnode=144.202.19.190:24126
-addnode=207.148.5.135:24126
-addnode=89.47.165.165:24126
-addnode=62.75.139.140:24126
-addnode=207.148.5.135:24126
-addnode=209.250.245.66:24126
-addnode=199.247.3.98:24126
-addnode=199.247.29.65:24126
-addnode=45.32.149.254:24126
+connect=insight.polispay.org:24126
+connect=explorer.polispay.org:24126
+connect=23.92.216.30:24126
+connect=45.76.220.156:24126
+addnode=172.104.23.226
+addnode=45.56.99.105
+addnode=50.116.51.197
+addnode=173.255.237.63
+addnode=5.8.101.60
+addnode=95.179.181.22
+addnode=45.76.133.133
 EOF
 }
 
@@ -153,6 +163,9 @@ function enable_firewall() {
   ufw limit ssh/tcp >/dev/null 2>&1
   ufw default allow outgoing >/dev/null 2>&1
   echo "y" | ufw enable >/dev/null 2>&1
+  apt-get -y install fail2ban >/dev/null 2>&1
+  systemctl enable fail2ban >/dev/null 2>&1
+  systemctl start fail2ban >/dev/null 2>&1
 }
 
 
@@ -161,7 +174,7 @@ function get_ip() {
   declare -a NODE_IPS
   for ips in $(netstat -i | awk '!/Kernel|Iface|lo/ {print $1," "}')
   do
-    NODE_IPS+=($(curl --interface $ips --connect-timeout 2 -s4 api.ipify.org))
+    NODE_IPS+=($(curl --interface $ips --connect-timeout 2 -s4 icanhazip.com))
   done
 
   if [ ${#NODE_IPS[@]} -gt 1 ]
@@ -221,7 +234,7 @@ apt-get update >/dev/null 2>&1
 apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" make software-properties-common \
 build-essential libtool autoconf libssl-dev libboost-dev libboost-chrono-dev libboost-filesystem-dev libboost-program-options-dev \
 libboost-system-dev libboost-test-dev libboost-thread-dev sudo automake git wget curl libdb4.8-dev bsdmainutils libdb4.8++-dev \
-libminiupnpc-dev libgmp3-dev ufw pkg-config libevent-dev  libdb5.3++>/dev/null 2>&1
+libminiupnpc-dev libgmp3-dev unzip libzmq3-dev ufw pkg-config libevent-dev libdb5.3++>/dev/null 2>&1
 if [ "$?" -gt "0" ];
   then
     echo -e "${RED}Not all required packages were installed properly. Try to install them manually by running the following commands:${NC}\n"
@@ -240,21 +253,63 @@ clear
 
 
 function important_information() {
- echo -e "VPS: $NODEIP:$COIN_PORT"
- echo -e "MASTERNODE PRIVATEKEY: $COINKEY$"
- }
+ echo
+ echo -e "================================================================================================================================"
+ echo -e "$COIN_NAME Masternode is up and running listening on port ${RED}$COIN_PORT${NC}."
+ echo -e "Configuration file is: ${RED}$CONFIGFOLDER/$CONFIG_FILE${NC}"
+ echo -e "Start: ${RED}systemctl start $COIN_NAME.service${NC}"
+ echo -e "Stop: ${RED}systemctl stop $COIN_NAME.service${NC}"
+ echo -e "VPS_IP:PORT ${RED}$NODEIP:$COIN_PORT${NC}"
+ echo -e "MASTERNODE PRIVATEKEY is: ${RED}$COINKEY${NC}"
+ if [[ -n $SENTINEL_REPO  ]]; then
+  echo -e "${RED}Sentinel${NC} is installed in ${RED}/sentinel${NC}"
+  echo -e "Sentinel logs is: ${RED}$CONFIGFOLDER/sentinel.log${NC}"
+ fi
+ echo -e "Please check ${RED}$COIN_NAME${NC} is running with the following command: ${RED}systemctl status $COIN_NAME.service${NC}"
+ echo -e "================================================================================================================================"
+}
+
+function import_bootstrap() {
+  echo -e "Importing Bootstrap For $COIN_NAME"
+  cd $TMP_BS
+  wget -q $COIN_BS
+  compile_error
+  COIN_ZIP=$(echo $COIN_BS | awk -F'/' '{print $NF}')
+  tar xvf $COIN_ZIP --strip 1 >/dev/null 2>&1
+  compile_error
+  cp -r blocks $CONFIGFOLDER
+  cp -r chainstate $CONFIGFOLDER
+  cp -r peers.dat $CONFIGFOLDER
+  cd - >/dev/null 2>&1
+  rm -rf $TMP_BS >/dev/null 2>&1
+  clear
+}
+
+function add_swap() {
+  sudo fallocate -l 2G /swapfile >/dev/null 2>&1
+  sudo chmod 600 /swapfile >/dev/null 2>&1
+  sudo mkswap /swapfile >/dev/null 2>&1
+  sudo swapon /swapfile >/dev/null 2>&1
+  cat << EOF >> /etc/sysctl.conf
+vm.swappiness=10
+EOF
+  cat << EOF >> /etc/fstab
+/swapfile none swap sw 0 0
+EOF
+}
 
 function setup_node() {
   get_ip
   create_config
+  import_bootstrap
   create_key
   update_config
   enable_firewall
   install_sentinel
   important_information
   configure_systemd
+  add_swap
 }
-
 
 ##### Main #####
 clear
