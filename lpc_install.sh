@@ -4,11 +4,9 @@ CONFIG_FILE='lightpaycoin.conf'
 CONFIGFOLDER='/root/.lightpaycoin'
 COIN_DAEMON='/usr/local/bin/lightpaycoind'
 COIN_CLI='/usr/local/bin/lightpaycoin-cli'
-COIN_REPO='https://github.com/lpcproject/LightPayCoin/releases/download/v1.0.0.1/lightpaycoin-1.0.0-x86_64-linux-gnu.tar.gz'
+COIN_REPO='https://github.com/lpcproject/LightPayCoin/releases/download/v1.0.1.0/lightpaycoin-1.0.1-x86_64-linux-gnu.tar.gz'
 COIN_NAME='LightPayCoin'
 COIN_PORT=39797
-
-NODEIP=$(curl -s4 icanhazip.com)
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -61,24 +59,19 @@ function configure_systemd() {
 [Unit]
 Description=$COIN_NAME service
 After=network.target
-
 [Service]
 User=root
 Group=root
-
 Type=forking
 #PIDFile=$CONFIGFOLDER/$COIN_NAME.pid
-
 ExecStart=$COIN_DAEMON -daemon -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER
 ExecStop=-$COIN_CLI -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER stop
-
 Restart=always
 PrivateTmp=true
 TimeoutStopSec=60s
 TimeoutStartSec=10s
 StartLimitInterval=120s
 StartLimitBurst=5
-
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -110,7 +103,6 @@ function configure_startup() {
 # Description: This file starts and stops $COIN_NAME MN server
 #
 ### END INIT INFO
-
 case "\$1" in
  start)
    $COIN_DAEMON -daemon
@@ -156,6 +148,8 @@ EOF
 }
 
 function create_key() {
+  echo -e "Enter your ${RED}$COIN_NAME Masternode Private Key${NC}.\nLeave it blank to generate a new ${RED}$COIN_NAME Masternode Private Key${NC} for you:"
+  read -e COINKEY
   if [[ -z "$COINKEY" ]]; then
   $COIN_DAEMON -daemon
   sleep 30
@@ -227,12 +221,14 @@ fi
 }
 
 function detect_ubuntu() {
- if [[ $(lsb_release -d) == *16.04* ]]; then
+ if [[ $(lsb_release -d) == *18.04* ]]; then
+   UBUNTU_VERSION=18
+ elif [[ $(lsb_release -d) == *16.04* ]]; then
    UBUNTU_VERSION=16
  elif [[ $(lsb_release -d) == *14.04* ]]; then
    UBUNTU_VERSION=14
 else
-   echo -e "${RED}You are not running Ubuntu 14.04 or 16.04 Installation is cancelled.${NC}"
+   echo -e "${RED}You are not running Ubuntu 14.04, 16.04 or 18.04 Installation is cancelled.${NC}"
    exit 1
 fi
 }
@@ -253,14 +249,32 @@ fi
 function prepare_system() {
 echo -e "Prepare the system to install ${GREEN}$COIN_NAME${NC} master node."
 apt-get update >/dev/null 2>&1
-apt-get install -y wget curl binutils >/dev/null 2>&1
+apt-get install -y wget curl ufw binutils net-tools >/dev/null 2>&1
 }
 
 function important_information() {
- echo -e "VPS: $NODEIP:$COIN_PORT"
- echo -e "MASTERNODE PRIVATEKEY: $COINKEY$"
+ echo
+ echo -e "================================================================================"
+ echo -e "$COIN_NAME Masternode is up and running listening on port ${RED}$COIN_PORT${NC}."
+ echo -e "Configuration file is: ${RED}$CONFIGFOLDER/$CONFIG_FILE${NC}"
+ if (( $UBUNTU_VERSION == 16 || $UBUNTU_VERSION == 18 )); then
+   echo -e "Start: ${RED}systemctl start $COIN_NAME.service${NC}"
+   echo -e "Stop: ${RED}systemctl stop $COIN_NAME.service${NC}"
+   echo -e "Status: ${RED}systemctl status $COIN_NAME.service${NC}"
+ else
+   echo -e "Start: ${RED}/etc/init.d/$COIN_NAME start${NC}"
+   echo -e "Stop: ${RED}/etc/init.d/$COIN_NAME stop${NC}"
+   echo -e "Status: ${RED}/etc/init.d/$COIN_NAME status${NC}"
+ fi
+ echo -e "VPS_IP:PORT ${RED}$NODEIP:$COIN_PORT${NC}"
+ echo -e "MASTERNODE PRIVATEKEY is: ${RED}$COINKEY${NC}"
+ if [[ -n $SENTINEL_REPO  ]]; then
+  echo -e "${RED}Sentinel${NC} is installed in ${RED}$CONFIGFOLDER/sentinel${NC}"
+  echo -e "Sentinel logs is: ${RED}$CONFIGFOLDER/sentinel.log${NC}"
+ fi
+ echo -e "Check if $COIN_NAME is running by using the following command:\n${RED}ps -ef | grep $COIN_DAEMON | grep -v grep${NC}"
+ echo -e "================================================================================"
 }
-
 
 function setup_node() {
   get_ip
@@ -269,7 +283,7 @@ function setup_node() {
   update_config
   enable_firewall
   important_information
-  if (( $UBUNTU_VERSION == 16 )); then
+  if (( $UBUNTU_VERSION == 16 || $UBUNTU_VERSION == 18 )); then
     configure_systemd
   else
     configure_startup
@@ -283,4 +297,4 @@ clear
 checks
 prepare_system
 compile_node
-setup_node
+setup_node 
