@@ -6,11 +6,11 @@ CONFIG_FILE='polis.conf'
 CONFIGFOLDER='/root/.poliscore'
 COIN_DAEMON='/usr/local/bin/polisd'
 COIN_CLI='/usr/local/bin/polis-cli'
-COIN_REPO='https://github.com/polispay/polis/releases/download/v1.4.8.1/poliscore-1.4.8.1-x86_64-linux-gnu.tar.gz'
+COIN_REPO='https://github.com/polispay/polis/releases/download/v1.4.9/poliscore-1.4.9-x86_64-linux-gnu.tar.gz'
 SENTINEL_REPO='https://github.com/polispay/sentinel.git'
 COIN_NAME='Polis'
 COIN_PORT=24126
-COIN_BS='https://github.com/cryptosharks131/Polis/releases/download/v1.4.8.1/bootstrap.tar.gz'
+COIN_BS='http://explorer.polispay.org/images/bootstrap.dat'
 
 
 NODEIP=$(curl -s4 icanhazip.com)
@@ -141,17 +141,39 @@ maxconnections=256
 masternode=1
 externalip=$NODEIP:$COIN_PORT
 masternodeprivkey=$COINKEY
-connect=insight.polispay.org:24126
-connect=explorer.polispay.org:24126
-connect=23.92.216.30:24126
-connect=45.76.220.156:24126
-addnode=172.104.23.226
-addnode=45.56.99.105
-addnode=50.116.51.197
-addnode=173.255.237.63
-addnode=5.8.101.60
-addnode=95.179.181.22
-addnode=45.76.133.133
+addnode=insight.polispay.org
+addnode=explorer.polispay.org
+addnode=23.92.216.30
+addnode=199.247.30.134
+addnode=45.76.153.10
+addnode=45.76.135.238
+addnode=199.247.26.161
+addnode=45.76.220.156
+addnode=199.247.9.68
+addnode=144.202.59.4
+addnode=104.238.154.100
+addnode=68.183.105.61
+addnode=104.248.122.216
+addnode=68.183.103.62
+addnode=68.183.103.18
+addnode=95.179.154.62
+addnode=95.179.154.115
+addnode=209.250.249.99
+addnode=108.61.188.216
+addnode=45.77.138.112
+addnode=95.179.153.250
+addnode=199.247.31.219
+addnode=95.179.143.229
+addnode=45.32.234.209
+addnode=199.247.31.202
+addnode=185.92.220.226
+addnode=108.61.99.207
+addnode=95.179.176.241
+addnode=95.179.177.232
+addnode=108.61.199.39
+addnode=95.179.135.220
+addnode=95.179.147.160
+addnode=45.63.40.199
 EOF
 }
 
@@ -271,17 +293,19 @@ function important_information() {
 
 function import_bootstrap() {
   echo -e "Importing Bootstrap For $COIN_NAME"
-  cd $TMP_BS
+#   cd $TMP_BS
+  cd $CONFIGFOLDER
   wget -q $COIN_BS
+#   compile_error
+#   COIN_ZIP=$(echo $COIN_BS | awk -F'/' '{print $NF}')
+#   tar xvf $COIN_ZIP --strip 1 >/dev/null 2>&1
   compile_error
-  COIN_ZIP=$(echo $COIN_BS | awk -F'/' '{print $NF}')
-  tar xvf $COIN_ZIP --strip 1 >/dev/null 2>&1
-  compile_error
-  cp -r blocks $CONFIGFOLDER
-  cp -r chainstate $CONFIGFOLDER
-  cp -r peers.dat $CONFIGFOLDER
-  cd - >/dev/null 2>&1
-  rm -rf $TMP_BS >/dev/null 2>&1
+  cd
+#   cp -r blocks $CONFIGFOLDER
+#   cp -r chainstate $CONFIGFOLDER
+#   cp -r peers.dat $CONFIGFOLDER
+#   cd - >/dev/null 2>&1
+#   rm -rf $TMP_BS >/dev/null 2>&1
   clear
 }
 
