@@ -6,7 +6,7 @@ CONFIGFOLDER='/root/.poliscore'
 CONFIG_FILE='polis.conf'
 COIN_DAEMON='/usr/local/bin/polisd'
 COIN_CLI='/usr/local/bin/polis-cli'
-COIN_REPO='https://github.com/polispay/polis/releases/download/v1.4.9/poliscore-1.4.9-x86_64-linux-gnu.tar.gz'
+COIN_REPO='https://github.com/polispay/polis/releases/download/1.4.12/poliscore-1.4.12-x86_64-linux-gnu.tar.gz'
 SENTINEL_REPO='https://github.com/polispay/sentinel.git'
 COIN_NAME='Polis'
 COIN_BS='http://explorer.polispay.org/images/bootstrap.dat'
@@ -31,7 +31,7 @@ function update_node() {
   COIN_ZIP=$(echo $COIN_REPO | awk -F'/' '{print $NF}')
   tar xvf $COIN_ZIP --strip 1 >/dev/null 2>&1
   compile_error
-  cp polis{d,-cli} /usr/local/bin
+  cp bin/polis{d,-cli} /usr/local/bin
   compile_error
   strip $COIN_DAEMON $COIN_CLI
   cd - >/dev/null 2>&1
@@ -50,8 +50,8 @@ fi
 }
 
 function checks() {
-if [[ $(lsb_release -d) != *16.04* ]]; then
-  echo -e "${RED}You are not running Ubuntu 16.04. Installation is cancelled.${NC}"
+if [[ $(lsb_release -d) != *16.04* ]] && [[ $(lsb_release -d) != *18.04* ]] && [[ $(lsb_release -d) != *18.10* ]]; then
+  echo -e "${RED}You are not running Ubuntu 16.04 or 18.04 or 18.10. Update is cancelled.${NC}"
   exit 1
 fi
 
@@ -113,11 +113,6 @@ addnode=insight.polispay.org
 addnode=explorer.polispay.org
 addnode=23.92.216.30
 addnode=199.247.30.134
-addnode=45.76.153.10
-addnode=45.76.135.238
-addnode=199.247.26.161
-addnode=45.76.220.156
-addnode=199.247.9.68
 addnode=144.202.59.4
 addnode=104.238.154.100
 addnode=68.183.105.61
@@ -169,7 +164,7 @@ clear
 checks
 prepare_system
 update_node
-import_bootstrap
+#import_bootstrap
 update_config
 update_sentinel
 important_information
