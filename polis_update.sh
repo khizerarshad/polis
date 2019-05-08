@@ -6,10 +6,10 @@ CONFIGFOLDER='/root/.poliscore'
 CONFIG_FILE='polis.conf'
 COIN_DAEMON='/usr/local/bin/polisd'
 COIN_CLI='/usr/local/bin/polis-cli'
-COIN_REPO='https://github.com/polispay/polis/releases/download/1.4.12/poliscore-1.4.12-x86_64-linux-gnu.tar.gz'
+COIN_REPO='https://github.com/polispay/polis/releases/download/v1.4.13/poliscore-1.4.13-x86_64-linux-gnu.tar.gz'
 SENTINEL_REPO='https://github.com/polispay/sentinel.git'
 COIN_NAME='Polis'
-COIN_BS='http://explorer.polispay.org/images/bootstrap.dat'
+COIN_BS='https://github.com/cryptosharks131/Polis/releases/download/v1.4.13/bootstrap.tar.gz'
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -91,17 +91,17 @@ clear
 function import_bootstrap() {
   echo -e "Importing Bootstrap For $COIN_NAME"
   rm -rf $CONFIGFOLDER/blocks $CONFIGFOLDER/chainstate $CONFIGFOLDER/peers.dat $CONFIGFOLDER/banlist.dat
-#   cd $TMP_BS
-  cd $CONFIGFOLDER
+  cd $TMP_BS
+#   cd $CONFIGFOLDER
   wget -q $COIN_BS
   compile_error
-  cd
-#   COIN_ZIP=$(echo $COIN_BS | awk -F'/' '{print $NF}')
-#   tar xvf $COIN_ZIP --strip 1 >/dev/null 2>&1
-#   compile_error
-#   cp -r blocks chainstate $CONFIGFOLDER
-#   cd - >/dev/null 2>&1
-#   rm -rf $TMP_BS >/dev/null 2>&1
+#   cd
+  COIN_ZIP=$(echo $COIN_BS | awk -F'/' '{print $NF}')
+  tar xvf $COIN_ZIP --strip 1 >/dev/null 2>&1
+  compile_error
+  cp -r blocks chainstate peers.dat $CONFIGFOLDER
+  cd - >/dev/null 2>&1
+  rm -rf $TMP_BS >/dev/null 2>&1
   clear
 }
 
@@ -109,34 +109,13 @@ function update_config() {
   sed -i '/addnode=*/d' $CONFIGFOLDER/$CONFIG_FILE
   sed -i '/connect=*/d' $CONFIGFOLDER/$CONFIG_FILE
   cat << EOF >> $CONFIGFOLDER/$CONFIG_FILE
-addnode=insight.polispay.org
-addnode=explorer.polispay.org
-addnode=23.92.216.30
-addnode=199.247.30.134
-addnode=144.202.59.4
-addnode=104.238.154.100
-addnode=68.183.105.61
-addnode=104.248.122.216
-addnode=68.183.103.62
-addnode=68.183.103.18
-addnode=95.179.154.62
-addnode=95.179.154.115
-addnode=209.250.249.99
-addnode=108.61.188.216
-addnode=45.77.138.112
-addnode=95.179.153.250
-addnode=199.247.31.219
-addnode=95.179.143.229
-addnode=45.32.234.209
-addnode=199.247.31.202
-addnode=185.92.220.226
-addnode=108.61.99.207
-addnode=95.179.176.241
-addnode=95.179.177.232
-addnode=108.61.199.39
-addnode=95.179.135.220
-addnode=95.179.147.160
-addnode=45.63.40.199
+addnode=51.83.76.173
+addnode=80.211.234.167
+addnode=107.22.45.11
+addnode=45.32.234.82
+addnode=18.208.147.190
+addnode=167.99.224.111
+addnode=46.101.121.15
 EOF
 }
 
@@ -164,7 +143,7 @@ clear
 checks
 prepare_system
 update_node
-#import_bootstrap
+import_bootstrap
 update_config
 update_sentinel
 important_information
