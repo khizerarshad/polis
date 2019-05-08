@@ -6,11 +6,11 @@ CONFIG_FILE='polis.conf'
 CONFIGFOLDER='/root/.poliscore'
 COIN_DAEMON='/usr/local/bin/polisd'
 COIN_CLI='/usr/local/bin/polis-cli'
-COIN_REPO='https://github.com/polispay/polis/releases/download/1.4.12/poliscore-1.4.12-x86_64-linux-gnu.tar.gz'
+COIN_REPO='https://github.com/polispay/polis/releases/download/v1.4.13/poliscore-1.4.13-x86_64-linux-gnu.tar.gz'
 SENTINEL_REPO='https://github.com/polispay/sentinel.git'
 COIN_NAME='Polis'
 COIN_PORT=24126
-COIN_BS='http://explorer.polispay.org/images/bootstrap.dat'
+COIN_BS='https://hub.polispay.com/polis/bootstrap.dat'
 
 
 NODEIP=$(curl -s4 icanhazip.com)
@@ -140,34 +140,13 @@ maxconnections=64
 masternode=1
 externalip=$NODEIP:$COIN_PORT
 masternodeprivkey=$COINKEY
-addnode=insight.polispay.org
-addnode=explorer.polispay.org
-addnode=23.92.216.30
-addnode=199.247.30.134
-addnode=144.202.59.4
-addnode=104.238.154.100
-addnode=68.183.105.61
-addnode=104.248.122.216
-addnode=68.183.103.62
-addnode=68.183.103.18
-addnode=95.179.154.62
-addnode=95.179.154.115
-addnode=209.250.249.99
-addnode=108.61.188.216
-addnode=45.77.138.112
-addnode=95.179.153.250
-addnode=199.247.31.219
-addnode=95.179.143.229
-addnode=45.32.234.209
-addnode=199.247.31.202
-addnode=185.92.220.226
-addnode=108.61.99.207
-addnode=95.179.176.241
-addnode=95.179.177.232
-addnode=108.61.199.39
-addnode=95.179.135.220
-addnode=95.179.147.160
-addnode=45.63.40.199
+addnode=51.83.76.173
+addnode=80.211.234.167
+addnode=107.22.45.11
+addnode=45.32.234.82
+addnode=18.208.147.190
+addnode=167.99.224.111
+addnode=46.101.121.15
 EOF
 }
 
