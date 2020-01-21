@@ -6,11 +6,11 @@ CONFIG_FILE='polis.conf'
 CONFIGFOLDER='/root/.poliscore'
 COIN_DAEMON='/usr/local/bin/polisd'
 COIN_CLI='/usr/local/bin/polis-cli'
-COIN_REPO='https://github.com/polispay/polis/releases/download/v1.5.3/poliscore-1.5.3-x86_64-linux-gnu.tar.gz'
+COIN_REPO='https://github.com/polispay/polis/releases/download/v1.6.0/poliscore-1.6.0-x86_64-linux-gnu.tar.gz'
 SENTINEL_REPO='https://github.com/polispay/sentinel.git'
 COIN_NAME='Polis'
 COIN_PORT=24126
-COIN_BS='https://hub.polispay.com/PolisCore/bootstrap.tar.gz'
+COIN_BS='https://github.com/polispay/polis/releases/download/v1.6.0/bootstrap.tar.gz'
 
 
 NODEIP=$(curl -s4 icanhazip.com)
@@ -113,6 +113,7 @@ EOF
 }
 
 function create_key() {
+  echo -e "Enter your ${RED}$COIN_NAME Masternode Private Key${NC}. Leave it blank to generate a new ${RED}Masternode Private Key${NC} for you:"
   if [[ -z "$COINKEYOLD" ]];
   then
     $COIN_DAEMON -daemon
@@ -174,20 +175,18 @@ masternode=1
 externalip=$NODEIP:$COIN_PORT
 masternodeprivkey=$COINKEYOLD
 masternodeblsprivkey=$COINKEYPRIV
-addnode=149.28.149.89 
-addnode=207.148.13.21
-addnode=80.240.21.39
-addnode=199.247.14.30
-addnode=95.179.207.144
-addnode=43.224.34.171
-addnode=217.69.5.65
-addnode=207.246.117.34
-addnode=45.76.86.38
-addnode=207.246.117.34
-addnode=95.179.207.144
-addnode=165.22.14.216
-addnode=167.114.229.99
+addnode=insight.polispay.org
+addnode=116.203.116.205
+addnode=95.216.56.42
+addnode=207.180.218.18
+addnode=80.211.45.85
+addnode=176.233.138.86
+addnode=5.189.161.94
+addnode=149.28.209.101
+addnode=167.99.85.39
+addnode=157.230.87.57
 EOF
+echo $COINKEYPUB > $CONFIGFOLDER/masternode.info
 }
 
 
@@ -312,12 +311,9 @@ function import_bootstrap() {
   wget -q $COIN_BS
   compile_error
   COIN_ZIP=$(echo $COIN_BS | awk -F'/' '{print $NF}')
-  tar xvf $COIN_ZIP --strip 1 >/dev/null 2>&1
+  tar xvf $COIN_ZIP >/dev/null 2>&1
   compile_error
-#   cd
-  cp -r blocks $CONFIGFOLDER
-  cp -r chainstate $CONFIGFOLDER
-#   cp -r peers.dat $CONFIGFOLDER
+  cp -r evodb blocks chainstate peers.dat $CONFIGFOLDER
   cd - >/dev/null 2>&1
   rm -rf $TMP_BS >/dev/null 2>&1
   clear
@@ -339,7 +335,7 @@ EOF
 function setup_node() {
   get_ip
   create_config
-  #import_bootstrap
+  import_bootstrap
   create_key
   update_config
   enable_firewall
